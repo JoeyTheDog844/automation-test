@@ -1,46 +1,71 @@
 import tkinter as tk
 from tkinter import messagebox
-from PIL import Image, ImageTk  # Import Pillow for resizing images
-import remote_services  # ✅ Import service checking module
+from PIL import Image, ImageTk
+import automate_services  # ✅ Import automation module
 
 def show_automate_services():
-    """ ✅ Update service statuses in the GUI """
+    """ ✅ Display service statuses in the GUI """
     for widget in automateservices_frame.winfo_children():
         widget.destroy()  # ✅ Clear old labels
 
-    service_statuses = remote_services.check_remote_servicess()  # ✅ Get service statuses
+    service_statuses = automate_services.check_all_services()  # ✅ Fetch service statuses
 
     # ✅ Display service names & statuses
     for i, (service, status) in enumerate(service_statuses.items()):
         tk.Label(automateservices_frame, text=service, font=("Arial", 10), anchor="w").grid(row=i, column=0, sticky="w", padx=5, pady=2)
         tk.Label(automateservices_frame, text=status, font=("Arial", 10), fg="green" if status == "Running" else "red").grid(row=i, column=1, padx=5, pady=2)
 
-    # ✅ Add "Stop All" button
+    # ✅ Buttons for stopping, starting, and disabling services
     stop_button = tk.Button(automateservices_frame, text="STOP ALL SERVICES", font=("Bold", 12), bg="red", fg="white", command=stop_automate_services)
-    stop_button.grid(row=len(service_statuses) + 1, column=0, columnspan=2, pady=10)
+    stop_button.grid(row=len(service_statuses) + 1, column=0, padx=5, pady=10)
+
+    start_button = tk.Button(automateservices_frame, text="START ALL SERVICES", font=("Bold", 12), bg="green", fg="white", command=start_automate_services)
+    start_button.grid(row=len(service_statuses) + 1, column=1, padx=5, pady=10)
+
+    disable_button = tk.Button(automateservices_frame, text="DISABLE ALL SERVICES", font=("Bold", 12), bg="gray", fg="white", command=disable_automate_services)
+    disable_button.grid(row=len(service_statuses) + 2, column=0, columnspan=2, padx=5, pady=10)
 
 def stop_automate_services():
     """ ✅ Stop all running services """
-    stopped_services, failed_services = remote_services.stop_all_services()
+    stopped_services, failed_services = automate_services.stop_all_services()
 
-    # ✅ Show success/failure messages
     if stopped_services:
         messagebox.showinfo("Services Stopped", f"Successfully stopped:\n" + "\n".join(stopped_services))
     if failed_services:
         messagebox.showwarning("Failed to Stop", f"Could not stop:\n" + "\n".join(failed_services))
 
-    # ✅ Refresh status
+    show_automate_services()
+
+def start_automate_services():
+    """ ✅ Start all stopped services """
+    started_services, failed_services = automate_services.start_all_services()
+
+    if started_services:
+        messagebox.showinfo("Services Started", f"Successfully started:\n" + "\n".join(started_services))
+    if failed_services:
+        messagebox.showwarning("Failed to Start", f"Could not start:\n" + "\n".join(failed_services))
+
+    show_automate_services()
+
+def disable_automate_services():
+    """ ✅ Disable all critical services """
+    disabled_services, failed_services = automate_services.disable_all_services()
+
+    if disabled_services:
+        messagebox.showinfo("Services Disabled", f"Successfully disabled:\n" + "\n".join(disabled_services))
+    if failed_services:
+        messagebox.showwarning("Failed to Disable", f"Could not disable:\n" + "\n".join(failed_services))
+
     show_automate_services()
 
 def automateservices_page():
-    """ ✅ Display the Automate Services Page """
-    delete_pages()  # ✅ Clear previous content
-
+    """ ✅ Show the automate services page """
+    delete_pages()
+    
     global automateservices_frame
     automateservices_frame = tk.Frame(main_frame)
     automateservices_frame.pack(pady=10, fill="both", expand=True)
 
-    # ✅ Show services when page loads
     show_automate_services()
 
 def delete_pages():
@@ -66,21 +91,9 @@ root.title('CyberSecurity Audit Application')
 # Sidebar container frame
 sidebar_frame = tk.Frame(root, bg='#c3c3c3')
 
-# Options Frame
+# Options Frame (for buttons)
 options_frame = tk.Frame(sidebar_frame, bg='#c3c3c3', width=140, height=600)
 options_frame.configure(width=140, height=600)
-
-# Load and Resize Logo
-image_path = r"C:\Users\amaan\Desktop\Coding\doggy.jpg"
-try:
-    original_image = Image.open(image_path)
-    resized_image = original_image.resize((95, 95), Image.LANCZOS)
-    logo_img = ImageTk.PhotoImage(resized_image)
-
-    logo_label = tk.Label(sidebar_frame, image=logo_img, bg='#c3c3c3')
-    logo_label.pack(pady=10)
-except Exception as e:
-    print(f"Error loading logo: {e}")
 
 # Create indicators
 home_indicate = tk.Label(options_frame, text='', bg='#c3c3c3')
@@ -116,7 +129,3 @@ main_frame = tk.Frame(root, highlightbackground='black', highlightthickness=2)
 main_frame.pack(side=tk.LEFT, fill="both", expand=True)
 
 root.mainloop()
-
-
-## YOU HAVE TO WRITE THE AUTOMATE SERVICES CODE FIRST WHICH AUTOMATES THE SERVICE BRO< YOU TOTATLLY FORGOT ABOUT THIS. 
-# YOUR CODE ONLY TELLS THE SERVICES ARE STOPPED OR NOT IN THE PDF
